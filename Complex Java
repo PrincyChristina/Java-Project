@@ -1,0 +1,170 @@
+import java.util.*;
+
+class Vehicle {
+    private String numberPlate;
+    private String type;
+    private boolean isEmergency;
+    private boolean isSpeeding;
+    private int priorityLevel;
+
+    public Vehicle(String numberPlate, String type, boolean isEmergency, boolean isSpeeding, int priorityLevel) {
+        this.numberPlate = numberPlate;
+        this.type = type;
+        this.isEmergency = isEmergency;
+        this.isSpeeding = isSpeeding;
+        this.priorityLevel = priorityLevel;
+    }
+
+    public String getNumberPlate() {
+        return numberPlate;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public boolean isEmergency() {
+        return isEmergency;
+    }
+
+    public boolean isSpeeding() {
+        return isSpeeding;
+    }
+
+    public int getPriorityLevel() {
+        return priorityLevel;
+    }
+
+    public String toString() {
+        return numberPlate + " (" + type + ") - Emergency: " + isEmergency + " - Speeding: " + isSpeeding + " - Priority: " + priorityLevel;
+    }
+}
+
+class Traffic {
+    private Vehicle[] laneArray;
+    private LinkedList<Vehicle> waitingVehicles;
+    private HashMap<String, Vehicle> vehicleMap;
+
+    public Traffic(int laneCount) {
+        laneArray = new Vehicle[laneCount];
+        waitingVehicles = new LinkedList<>();
+        vehicleMap = new HashMap<>();
+    }
+
+    public void addToLane(int index, Vehicle v) {
+        if (index >= 0 && index < laneArray.length) {
+            laneArray[index] = v;
+            vehicleMap.put(v.getNumberPlate(), v);
+        }
+    }
+
+    public void addToWaiting(Vehicle v) {
+        waitingVehicles.add(v);
+        vehicleMap.put(v.getNumberPlate(), v);
+    }
+
+    public void showLanes() {
+        System.out.println("Traffic Lane Status (Array):");
+        for (int i = 0; i < laneArray.length; i++) {
+            System.out.println("  Slot " + i + ": " + (laneArray[i] != null ? laneArray[i] : "Empty"));
+        }
+    }
+
+    public void showWaiting() {
+        System.out.println("Waiting Vehicles (LinkedList):");
+        for (Vehicle v : waitingVehicles) {
+            System.out.println("  " + v);
+        }
+    }
+
+    public void searchByNumber(String number) {
+        System.out.println("Search Result for " + number + ":");
+        Vehicle v = vehicleMap.get(number);
+        if (v != null) {
+            System.out.println("  Found: " + v);
+        } else {
+            System.out.println("  Not Found");
+        }
+    }
+}
+
+class MonitoringEnforcement {
+    private PriorityQueue<Vehicle> priorityQueue;
+    private ArrayList<Vehicle> allMonitored;
+
+    public MonitoringEnforcement() {
+        priorityQueue = new PriorityQueue<>(new Comparator<Vehicle>() {
+            public int compare(Vehicle v1, Vehicle v2) {
+                return Integer.compare(v2.getPriorityLevel(), v1.getPriorityLevel());
+            }
+        });
+        allMonitored = new ArrayList<>();
+    }
+
+    public void monitorVehicle(Vehicle v) {
+        priorityQueue.add(v);
+        allMonitored.add(v);
+    }
+
+    public void showPriorityQueue() {
+        System.out.println("Monitoring Priority Queue:");
+        PriorityQueue<Vehicle> temp = new PriorityQueue<>(priorityQueue);
+        while (!temp.isEmpty()) {
+            System.out.println("  " + temp.poll());
+        }
+    }
+
+    public void showSortedMonitored() {
+        Collections.sort(allMonitored, new Comparator<Vehicle>() {
+            public int compare(Vehicle v1, Vehicle v2) {
+                return v1.getNumberPlate().compareTo(v2.getNumberPlate());
+            }
+        });
+        System.out.println("Sorted All Monitored Vehicles (by Number Plate):");
+        for (Vehicle v : allMonitored) {
+            System.out.println("  " + v);
+        }
+    }
+}
+
+public class TrafficComplexSystem {
+    public static void main(String[] args) {
+        Vehicle v1 = new Vehicle("TN01AB1234", "Car", false, false, 1);
+        Vehicle v2 = new Vehicle("TN02CD5678", "Ambulance", true, false, 5);
+        Vehicle v3 = new Vehicle("TN03EF9012", "Truck", false, true, 2);
+        Vehicle v4 = new Vehicle("TN04GH3456", "FireTruck", true, true, 5);
+        Vehicle v5 = new Vehicle("TN05IJ7890", "Bike", false, false, 1);
+        Vehicle v6 = new Vehicle("TN06KL1122", "VIP Car", true, false, 4);
+
+        Traffic traffic = new Traffic(3);
+        traffic.addToLane(0, v1);
+        traffic.addToLane(1, v2);
+        traffic.addToLane(2, v3);
+        traffic.addToWaiting(v4);
+        traffic.addToWaiting(v5);
+        traffic.addToWaiting(v6);
+
+        MonitoringEnforcement monitor = new MonitoringEnforcement();
+        monitor.monitorVehicle(v1);
+        monitor.monitorVehicle(v2);
+        monitor.monitorVehicle(v3);
+        monitor.monitorVehicle(v4);
+        monitor.monitorVehicle(v5);
+        monitor.monitorVehicle(v6);
+
+        System.out.println("----- TRAFFIC LANES -----");
+        traffic.showLanes();
+
+        System.out.println("\n----- WAITING VEHICLES -----");
+        traffic.showWaiting();
+
+        System.out.println("\n----- SEARCH VEHICLE -----");
+        traffic.searchByNumber("TN06KL1122");
+
+        System.out.println("\n----- MONITORING PRIORITY -----");
+        monitor.showPriorityQueue();
+
+        System.out.println("\n----- SORTED MONITORED VEHICLES -----");
+        monitor.showSortedMonitored();
+    }
+}
